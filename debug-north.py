@@ -9,9 +9,9 @@ def docol():
   if debug:
     print("- docol -")
     print(f"word_pointer = {word_pointer}")
-    print(f"colon word address = {colon_words[program_words[word_pointer]]}")
+    print(f"colon word address = {colon_words[program_words[word_pointer]][0]}")
   return_stack.append(word_pointer)
-  word_pointer = int(colon_words[program_words[word_pointer]])
+  word_pointer = int(colon_words[program_words[word_pointer]][0])
 
 def colon():
   global word_pointer
@@ -22,12 +22,13 @@ def colon():
   word_pointer += 1
   word_name = program_words[word_pointer]
   # Save the last word address before word words
-  colon_words[word_name] = word_pointer
+  colon_words[word_name] = [word_pointer, 0]
   # Define the new word as a colon word
   words[word_name] = docol
   for word in program_words[word_pointer:]:
     # Skip until end of colon definition
     if word == ";":
+      colon_words[word_name][1] = word_pointer + 1
       break
     word_pointer += 1
 
@@ -234,6 +235,10 @@ def bye():
   global bye_
   bye_ = True
 
+def cleanup_(x):
+  global do_cleanup
+  do_cleanup = True if x == 0 else False
+
 words = {
   # Stack operations
   'dup': lambda x: (x, x),
@@ -297,7 +302,23 @@ words = {
   'debug': debug_,
   'exit': lambda x: exit(x),
   'bye': bye,
+  'cleanup': cleanup_,
 }
+
+
+def cleanup():
+  global program_words
+  global word_pointer
+  clean_program_words = []
+  old_size = len(program_words)
+  for col_word, (start, end) in colon_words.items():
+    #if debug: print(f"coldef: {program_words[start-1:end]}")
+    clean_program_words.extend(program_words[start-1:end])
+  #new_size = len(clean_program_words)
+  program_words = clean_program_words
+  # TODO: Refresh colon_words so we don't lose too much time
+  word_pointer = 0
+  #if debug: print(f"cleaned-up: {old_size} > {new_size}")
 
 
 def main():
@@ -314,6 +335,7 @@ def main():
   global here
   global bye_
   global error
+  global do_cleanup
   memory = [None for i in range(memory_size)]
   return_stack = []
   data_stack = []
@@ -327,6 +349,7 @@ def main():
   here = 0
   bye_ = False
   error = False
+  do_cleanup = True
 
 
   while not bye_:
@@ -337,6 +360,11 @@ def main():
     if not error:
       print("ok" if not debug else "-- OK")
     else: error = False
+
+    if do_cleanup:
+      # Only keep word definitions
+      cleanup()
+
 
 def execute():
   global return_stack
@@ -380,6 +408,8 @@ def execute():
       if debug: print(f"--- Func {func} ---")
       if debug: print("Callable")
       argindex = len(data_stack) - func.__code__.co_argcount
+      if argindex < 0:
+        print("\nStack underflow")
       if debug: print(f"argindex = {argindex}, type({type(argindex)})")
       args = data_stack[argindex:]
       if debug: print(f"args = {args}, type({type(args)})")
