@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 memory_size = 4096
 
 
@@ -280,8 +281,6 @@ words = {
   '@': lambda ptr: (memory[ptr],),
   'variable': variable,
   'constant': constant,
-  'true': lambda: (0,),
-  'false': lambda: (1,),
   # Branching
   'i': lambda: (loop_stack[-4],),
   'if': if_,
@@ -337,6 +336,7 @@ def main():
   global bye_
   global error
   global do_cleanup
+  global debug
   memory = [None for i in range(memory_size)]
   return_stack = []
   data_stack = []
@@ -348,6 +348,7 @@ def main():
   variables = {}
   constants = {}
   here = 0
+  debug = False
   bye_ = False
   error = False
   do_cleanup = True
@@ -380,6 +381,7 @@ def execute():
   global constants
   global here
   global error
+  global debug
 
   if debug: print(f"len(program_words) = {len(program_words)}")
 
@@ -421,5 +423,4 @@ def execute():
 
 
 if __name__ == '__main__':
-  debug = False
   main()
