@@ -277,6 +277,7 @@ words = {
   'true': lambda: (0,),
   'false': lambda: (1,),
   # Branching
+  'i': lambda: (loop_stack[-4],),
   'if': if_,
   'else': else_,
   'then': (),
