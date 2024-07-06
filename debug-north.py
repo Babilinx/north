@@ -242,10 +242,6 @@ words = {
 }
 
 
-def repl():
-  input_words = input().split()
-  program_words.extend(input_words)
-
 def main():
   global return_stack
   global data_stack
