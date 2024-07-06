@@ -222,7 +222,7 @@ def source():
   word_pointer += 1
   filename = str(program_words[word_pointer])
   try:
-    file = open(filename, 'r').read()
+    file = open(filename, 'r').read().lower()
     program_words.extend(file.split())
   except FileNotFoundError:
     print(f"\nError: can't open file '{filename}'")
@@ -354,9 +354,9 @@ def main():
 
 
   while not bye_:
-    input_words = input("> ").split()
-    print(f"\033[1A", *input_words, end=" ")
-    program_words.extend(input_words)
+    input_words = input("> ")
+    print(f"\033[1A", input_words, end=" ")
+    program_words.extend(input_words.lower().split())
     execute()
     if not error:
       print("ok" if not debug else "-- OK")
