@@ -359,9 +359,18 @@ def main():
     print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
   while not bye_:
+    continue_ = False
     input_words = input("> ")
     print(f"\033[1A", input_words, end=" ")
-    program_words.extend(input_words.lower().split())
+    new_words = input_words.lower().split()
+    for word in new_words:
+      if not word in words:
+        print(f"\nERROR: Undefined word '{word}'")
+        continue_ = True
+        break
+    if continue_:
+      continue
+    program_words.extend(new_words)
     execute()
     if not error:
       print("ok" if not debug else "-- OK")
@@ -408,7 +417,7 @@ def execute():
         print(f"\nError: Word '{word}' is undefined!")
         error = True
         word_pointer += 1
-        return
+        continue
 
     func = words[word]
     if callable(func):
