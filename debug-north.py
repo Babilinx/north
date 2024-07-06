@@ -57,6 +57,7 @@ def variable():
   variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
   here += 1
+  return (variable_ptr,)
 
 def constant(x):
   global word_pointer
