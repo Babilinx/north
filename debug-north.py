@@ -189,6 +189,10 @@ def source():
   file = open(filename, 'r').read()
   program_words.extend(file.split())
 
+def debug_(x):
+  global debug
+  debug = True if x == 0 else False
+
 def bye():
   global bye_
   bye_ = True
@@ -251,6 +255,8 @@ words = {
   '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
   '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
   'cr': lambda: print(),
+  # Program flow
+  'debug': debug_,
   'exit': lambda x: exit(x),
   'bye': bye,
 }
@@ -288,7 +294,7 @@ def main():
     print(f"\033[1A", *input_words, end=" ")
     program_words.extend(input_words)
     execute()
-    print("ok")
+    print("ok" if not debug else "-- OK")
 
 def execute():
   global return_stack
