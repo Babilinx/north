@@ -364,7 +364,7 @@ def main():
     print(f"\033[1A", input_words, end=" ")
     new_words = input_words.lower().split()
     for word in new_words:
-      if not word in words:
+      if not word in words and not word.isdigit():
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
