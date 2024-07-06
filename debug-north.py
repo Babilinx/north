@@ -2,26 +2,34 @@ memory_size = 4096
 
 
 def docol():
+  global program_words
+  global colon_words
+  global return_stack
   global word_pointer
   if debug:
     print("- docol -")
     print(f"word_pointer = {word_pointer}")
+    print(f"colon word address = {colon_words[program_words[word_pointer]]}")
   return_stack.append(word_pointer)
   word_pointer = int(colon_words[program_words[word_pointer]])
 
 def colon():
   global word_pointer
   global program_words
-  word_name = program_words[word_pointer+1]
+  global colon_words
+  global words
+  # Next word is the word name
+  word_pointer += 1
+  word_name = program_words[word_pointer]
+  # Save the last word address before word words
+  colon_words[word_name] = word_pointer
+  # Define the new word as a colon word
   words[word_name] = docol
-  colon_words[word_name] = word_pointer+1
-  col_words = program_words[word_pointer+1:]
-  while True:
-    word_pointer += 1
-    word = col_words[word_pointer]
+  for word in program_words[word_pointer:]:
+    # Skip until end of colon definition
     if word == ";":
-      word_pointer += 1
       break
+    word_pointer += 1
 
 def semicolon():
   global word_pointer
