@@ -353,6 +353,10 @@ def main():
   error = False
   do_cleanup = True
 
+  try:
+    program_words.extend(open("init.nth", "r").read().lower().split())
+  except:
+    print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
   while not bye_:
     input_words = input("> ")
