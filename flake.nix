@@ -12,9 +12,8 @@
          python3
          nano
          git
-        ];
-        
-      };
+      ];
+    };
 
     EDITOR = "nano";
     
