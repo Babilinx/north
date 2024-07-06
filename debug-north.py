@@ -127,6 +127,7 @@ def else_():
 def do():
   global word_pointer
   global program_words
+  global data_stack
   global loop_stack
   global return_stack
   return_stack.append(word_pointer)
@@ -142,8 +143,20 @@ def do():
       do_times -= 1
     elif word == "until":
       do_times -= 1
+    elif word == "loop":
+      do_times -= 1
     if do_times == 0:
+      '''
+      At the end, loop_stack contain:
+        [ start_address, *data, len(data), end_address ]
+      '''
       # End of 'do' definition
+      if word == "loop":
+        # index = loop_stack[-3], limit = loop_stack[-4]
+        loop_stack.extend((data_stack.pop(), data_stack.pop()))
+        loop_stack.append(2)
+      else:
+        loop_stack.append(0)
       loop_stack.append(word_pointer+1)
       break
     word_pointer += 1
@@ -154,40 +167,51 @@ def do():
 def leave():
   global word_pointer
   global loop_stack
-  # End of do-loop address
-  word_pointer = loop_stack.pop() + 1
-  # 'do' address
-  loop_stack.pop()
+  word_pointer = loop_stack.pop()
+  #        start_address  len(data)  len(len(data))
+  elements_len = 1 + loop_stack[-2] + 1
+  # Remove the elements
+  loop_stack = loop_stack[:len(loop_stack)-elements_len]
 
 def while_(x):
   global word_pointer
   global loop_stack
   if x != 0:
-    # 'repeat' address
-    word_pointer = loop_stack.pop()
-    # 'do' address
-    loop_stack.pop()
+    leave()
 
 def repeat():
   global word_pointer
   global loop_stack
-  if debug: print(f"loop_stack = {loop_stack[-2]}")
-  word_pointer = loop_stack[-2]
+  if debug: print(f"loop_stack = {loop_stack[:3]}")
+  word_pointer = loop_stack[-3]
+
+def loop():
+  global loop_stack
+  global word_pointer
+  limit = loop_stack[-3]
+  index = loop_stack[-4] + 1
+  if debug:
+    print(f"limit = {limit}")
+    print(f"index = {index}")
+  if index < limit:
+    word_pointer = loop_stack[-5]
+    loop_stack[-4] = index
+  else:
+    leave()
 
 def again():
   global word_pointer
   global loop_stack
-  if debug: print(f"loop_stack = {loop_stack[-2]}")
-  word_pointer = loop_stack[-2]
+  if debug: print(f"loop_stack = {loop_stack[-3]}")
+  word_pointer = loop_stack[-3]
 
 def until(x):
   global word_pointer
   global loop_stack
   if x != 0:
-    word_pointer = loop_stack[-2]
+    word_pointer = loop_stack[-3]
   else:
-    word_pointer = loop_stack.pop()
-    loop_stack.pop()
+    leave()
 
 def source():
   global program_words
@@ -260,7 +284,7 @@ words = {
   'leave': leave,
   'while': while_,
   'repeat': repeat,
-  #'loop': loop,
+  'loop': loop,
   'until': until,
   'again': again,
   # I/O
@@ -333,7 +357,7 @@ def execute():
     if word_pointer == len(program_words):
       return
 
-    if debug: print(f"---- pointer = {word_pointer} ----")
+    if debug: print(f"\n---- pointer = {word_pointer} ----")
     word = program_words[word_pointer]
     defined = True if word in words else False
     if debug: print(f"--- Word {word} ---")
