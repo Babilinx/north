@@ -192,10 +192,15 @@ def until(x):
 def source():
   global program_words
   global word_pointer
+  global error
   word_pointer += 1
   filename = str(program_words[word_pointer])
-  file = open(filename, 'r').read()
-  program_words.extend(file.split())
+  try:
+    file = open(filename, 'r').read()
+    program_words.extend(file.split())
+  except FileNotFoundError:
+    print(f"\nError: can't open file '{filename}'")
+    error = True
 
 def debug_(x):
   global debug
@@ -283,6 +288,7 @@ def main():
   global constants
   global here
   global bye_
+  global error
   memory = [None for i in range(memory_size)]
   return_stack = []
   data_stack = []
@@ -295,6 +301,7 @@ def main():
   constants = {}
   here = 0
   bye_ = False
+  error = False
 
 
   while not bye_:
@@ -302,7 +309,9 @@ def main():
     print(f"\033[1A", *input_words, end=" ")
     program_words.extend(input_words)
     execute()
-    print("ok" if not debug else "-- OK")
+    if not error:
+      print("ok" if not debug else "-- OK")
+    else: error = False
 
 def execute():
   global return_stack
@@ -316,6 +325,7 @@ def execute():
   global variables
   global constants
   global here
+  global error
 
   if debug: print(f"len(program_words) = {len(program_words)}")
 
@@ -333,9 +343,12 @@ def execute():
         data_stack.append(int(word))
         word_pointer += 1
         continue
+      # Undefined word
       except ValueError:
-        print(f"Error: Immediate should be an integer, found '{word}'")
-        exit(1)
+        print(f"\nError: Word '{word}' is undefined!")
+        error = True
+        word_pointer += 1
+        return
 
     func = words[word]
     if callable(func):
