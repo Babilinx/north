@@ -191,9 +191,7 @@ def bye():
   bye_ = True
 
 words = {
-  '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
-  '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
-  'cr': lambda: print(),
+  # Stack operations
   'dup': lambda x: (x, x),
   'drop': lambda x: (),
   'swap': lambda x, y: (y, x),
@@ -201,31 +199,37 @@ words = {
   'rot': lambda z, y, x: (y, x, z),
   'nip': lambda y, x: (x,),
   'tuck': lambda y, x: (x, y, x),
+  '>r': rpush,
+  'r>': lambda: (return_stack.pop(),),
+  'r@': lambda: (return_stack[-1],),
+  # Arithmetic
   '+': lambda y, x: (y + x,),
   '-': lambda y, x: (y - x,),
   '*': lambda y, x: (y * x,),
   '/': lambda y, x: (y // x,),
   'mod': lambda y, x: (y % x,),
+  # Logic
   'and': lambda y, x: (y & x,),
   'or': lambda y, x: (y | x,),
   'xor': lambda y, x: (y ^ x,),
+  # Comparaison
   '<': lambda y, x: (0 if y < x else 1,),
   '>': lambda y, x: (0 if y > x else 1,),
   '<=': lambda y, x: (0 if y <= x else 1,),
   '>=': lambda y, x: (0 if y >= x else 1,),
   '!=': lambda y, x: (0 if y != x else 1,),
   '=': lambda y, x: (0 if y == x else 1,),
+  # Word definition
   ':': colon,
   ';': semicolon,
+  # Memory
   '!': store,
   '@': lambda ptr: (memory[ptr],),
   'variable': variable,
   'constant': constant,
-  '>r': rpush,
-  'r>': lambda: (return_stack.pop(),),
-  'r@': lambda: (return_stack[-1],),
   'true': lambda: (0,),
   'false': lambda: (1,),
+  # Branching
   'if': if_,
   'else': else_,
   'then': (),
@@ -236,7 +240,11 @@ words = {
   #'loop': loop,
   'until': until,
   'again': again,
+  # I/O
   'source': source,
+  '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
+  '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
+  'cr': lambda: print(),
   'exit': lambda x: exit(x),
   'bye': bye,
 }
