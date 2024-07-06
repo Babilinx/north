@@ -1,5 +1,4 @@
 memory_size = 4096
-variable_size = 512
 
 
 def docol():
@@ -30,6 +29,10 @@ def semicolon():
   if debug: print(f"return_stack = {return_stack}")
   word_pointer = int(return_stack.pop())
 
+def allot(x):
+  global here
+  here += x
+
 def store(data, ptr):
   global memory
   memory[ptr] = data
@@ -39,12 +42,12 @@ def variable():
   global program_words
   global variables
   global words
-  global variable_stack_pointer
+  global here
   word_pointer += 1
   variable_name = program_words[word_pointer]
-  variable_ptr = variable_stack_pointer
+  variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
-  variable_stack_pointer += 1
+  here += 1
 
 def constant(x):
   global word_pointer
@@ -223,6 +226,9 @@ words = {
   ':': colon,
   ';': semicolon,
   # Memory
+  'here': lambda: (here,),
+  'allot': allot,
+  'cell': lambda: (1,),
   '!': store,
   '@': lambda ptr: (memory[ptr],),
   'variable': variable,
@@ -261,7 +267,7 @@ def main():
   global memory
   global variables
   global constants
-  global variable_stack_pointer
+  global here
   global bye_
   memory = [None for i in range(memory_size)]
   return_stack = []
@@ -273,7 +279,7 @@ def main():
   colon_words = {}
   variables = {}
   constants = {}
-  variable_stack_pointer = memory_size - variable_size - 1
+  here = 0
   bye_ = False
 
 
@@ -295,7 +301,7 @@ def execute():
   global memory
   global variables
   global constants
-  global variable_stack_pointer
+  global here
 
   if debug: print(f"len(program_words) = {len(program_words)}")
 
@@ -332,5 +338,5 @@ def execute():
 
 
 if __name__ == '__main__':
-  debug = True
+  debug = False
   main()
