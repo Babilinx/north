@@ -1,0 +1,6 @@
+variable test
+69 test !
+variable test2
+6969 test2 !
+test @ .
+test2 @ . 

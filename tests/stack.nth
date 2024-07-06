@@ -1,0 +1,11 @@
+69 dup .s drop drop cr
+
+69 1 swap .s drop drop cr
+
+69 1 over .s drop drop drop cr
+
+69 1 2 rot .s drop drop drop cr
+
+1 69 nip .s drop cr
+
+1 69 tuck .s drop drop drop cr

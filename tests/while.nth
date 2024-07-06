@@ -1,0 +1,5 @@
+0 do dup 69 < while dup . 5 + repeat drop
+cr
+0 do 69 . dup 69 > if leave then 5 + again
+cr
+10 do 69 . 1 - dup until

@@ -1,0 +1,13 @@
+1 1 = if 69 else 70 then .
+2 3 < if 69 else 70 then .
+2 3 > if 70 else 69 then .
+3 2 <= if 70 else 69 then .
+3 3 >= if 69 else 70 then .
+cr
+true if 69 else 70 then .
+false if 70 else 69 then .
+cr
+true if true if 69 then else 70 then .
+true if false if 70 else 69 then else 70 then .
+false if true if 70 then else true if 69 else 70 then then .
+cr
