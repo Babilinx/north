@@ -297,6 +297,7 @@ words = {
   'source': source,
   '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
   '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
+  'emit': lambda x: print(chr(int(x)), end=""),
   'cr': lambda: print(),
   # Program flow
   'debug': debug_,
@@ -373,7 +374,7 @@ def main():
     program_words.extend(new_words)
     execute()
     if not error:
-      print("ok" if not debug else "-- OK")
+      print("  ok" if not debug else "-- OK")
     else: error = False
 
     if do_cleanup:
