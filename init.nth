@@ -1,4 +1,6 @@
 : cells cell * ;
+: buffer cells here swap allot ;
+
 : true 0 ;
 : false 1 ;
 
@@ -11,3 +13,6 @@
 
 : 1+ 1 + ;
 : 1- 1 - ;
+
+: invert if 1 else 0 then ;
+: abs dup 0< if 0 swap - then ;
