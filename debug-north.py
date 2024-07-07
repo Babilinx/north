@@ -243,6 +243,21 @@ def cleanup_(x):
   global do_cleanup
   do_cleanup = True if x == 0 else False
 
+def comment():
+  global program_words
+  global word_pointer
+  comment_times = 1
+  word_pointer += 1
+  for word in program_words[word_pointer:]:
+    if word == ")":
+      comment_times -= 1
+    elif word == "(":
+      comment_times += 1
+    if comment_times == 0:
+      if debug: print(f"comment_end = {word_pointer}")
+      break
+    word_pointer += 1
+
 words = {
   # Stack operations
   'dup': lambda x: (x, x),
@@ -306,6 +321,8 @@ words = {
   'exit': lambda x: exit(x),
   'bye': bye,
   'cleanup': cleanup_,
+  # Comments
+  '(': comment,
 }
 
 
@@ -364,16 +381,21 @@ def main():
   while not bye_:
     continue_ = False
     colon_def = False
+    comment = False
     input_words = input("> ")
     print(f"\033[1A", input_words, end=" ")
     new_words = input_words.lower().split()
     for word in new_words:
       if word == ":":
         colon_def = True
-      if not word in words and not word.isdigit() and not colon_def:
+      elif word == "(":
+        comment = True
+      if not word in words and not word.isdigit() and not colon_def and not comment:
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
+      if word == ")":
+        comment = False
       if colon_def:
         colon_def = False
     if continue_:
