@@ -370,7 +370,7 @@ def main():
     for word in new_words:
       if word == ":":
         colon_def = True
-      if not word in words and word.isdigit() and colon_def:
+      if not word in words and not word.isdigit() and not colon_def:
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
