@@ -170,9 +170,8 @@ def do():
 def leave():
   global word_pointer
   global loop_stack
-  word_pointer = loop_stack.pop()
-  #        start_address  len(data)  len(len(data))
-  elements_len = 1 + loop_stack[-2] + 1
+  word_pointer = loop_stack[-1]
+  elements_len = 3 + loop_stack[-2]
   # Remove the elements
   loop_stack = loop_stack[:len(loop_stack)-elements_len]
 
