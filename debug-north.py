@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+
 memory_size = 4096
 
 
@@ -377,6 +379,18 @@ def main():
     program_words.extend(open("init.nth", "r").read().lower().split())
   except:
     print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
+
+  if debug:
+    print("### Args ###")
+    print(f"{sys.argv[1:]}")
+  for arg in sys.argv[1:]:
+    try:
+      program_words.extend(open(arg, "r").read().lower().split())
+    except:
+      print(f"ERROR: '{arg}' couldn't be loaded!")
+      exit(1)
+  execute()
+  if do_cleanup: cleanup()
 
   while not bye_:
     continue_ = False
