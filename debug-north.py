@@ -26,6 +26,7 @@ def colon():
   colon_words[word_name] = [word_pointer, 0]
   # Define the new word as a colon word
   words[word_name] = docol
+  if debug: print(f"word_name = {word_name}")
   for word in program_words[word_pointer:]:
     # Skip until end of colon definition
     if word == ";":
@@ -36,7 +37,9 @@ def colon():
 def semicolon():
   global word_pointer
   global return_stack
-  if debug: print(f"return_stack = {return_stack}")
+  if debug:
+    print(f"return_stack = {return_stack}")
+    print("- docol end -")
   word_pointer = int(return_stack.pop())
 
 def allot(x):
@@ -184,12 +187,12 @@ def while_(x):
 def repeat():
   global word_pointer
   global loop_stack
-  if debug: print(f"loop_stack = {loop_stack[:3]}")
   word_pointer = loop_stack[-3]
 
 def loop():
   global loop_stack
   global word_pointer
+  if debug: print(f"loop_stack = {loop_stack}")
   limit = loop_stack[-3]
   index = loop_stack[-4] + 1
   if debug:
