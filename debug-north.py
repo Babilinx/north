@@ -361,14 +361,19 @@ def main():
 
   while not bye_:
     continue_ = False
+    colon_def = False
     input_words = input("> ")
     print(f"\033[1A", input_words, end=" ")
     new_words = input_words.lower().split()
     for word in new_words:
-      if not word in words and not word.isdigit():
+      if word == ":":
+        colon_def = True
+      if not word in words and word.isdigit() and colon_def:
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
+      if colon_def:
+        colon_def = False
     if continue_:
       continue
     program_words.extend(new_words)
