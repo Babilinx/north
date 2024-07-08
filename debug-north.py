@@ -304,7 +304,7 @@ words = {
   'i': lambda: (loop_stack[-4],),
   'if': if_,
   'else': else_,
-  'then': (),
+  'then': lambda: (),
   'do': do,
   'leave': leave,
   'while': while_,
@@ -475,17 +475,17 @@ def execute():
         continue
 
     func = words[word]
-    if callable(func):
-      if debug: print(f"--- Func {func} ---")
-      if debug: print("Callable")
-      argindex = len(data_stack) - func.__code__.co_argcount
-      if argindex < 0:
-        print("\nStack underflow")
-      if debug: print(f"argindex = {argindex}, type({type(argindex)})")
-      args = data_stack[argindex:]
-      if debug: print(f"args = {args}, type({type(args)})")
-      del data_stack[argindex:]
-      data_stack.extend(func(*args) or ())
+    #if callable(func):
+    if debug: print(f"--- Func {func} ---")
+    if debug: print("Callable")
+    argindex = len(data_stack) - func.__code__.co_argcount
+    if argindex < 0:
+      print("\nStack underflow")
+    if debug: print(f"argindex = {argindex}, type({type(argindex)})")
+    args = data_stack[argindex:]
+    if debug: print(f"args = {args}, type({type(args)})")
+    del data_stack[argindex:]
+    data_stack.extend(func(*args) or ())
 
     word_pointer += 1
 
