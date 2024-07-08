@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+import cProfile
+import pstats
 
 memory_size = 4096
 
@@ -495,4 +497,10 @@ def execute():
 
 
 if __name__ == '__main__':
+  #profiler = cProfile.Profile()
+  #profiler.enable()
   main()
+  #profiler.disable()
+  #stats = pstats.Stats(profiler).sort_stats('tottime')
+  #stats.print_stats()
+  #cProfile.run('main()')
