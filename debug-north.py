@@ -400,6 +400,7 @@ def main():
     continue_ = False
     colon_def = False
     comment = False
+    source = False
     input_words = input("> ")
     print(f"\033[1A", input_words, end=" ")
     new_words = input_words.lower().split()
@@ -408,7 +409,9 @@ def main():
         colon_def = True
       elif word == "(":
         comment = True
-      if not word in words and not word.isdigit() and not colon_def and not comment:
+      elif word == "source":
+        source = True
+      if not word in words and word.isdigit() and colon_def and comment and source:
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
@@ -416,6 +419,8 @@ def main():
         comment = False
       if colon_def:
         colon_def = False
+      if source:
+        source = False
     if continue_:
       continue
     program_words.extend(new_words)
