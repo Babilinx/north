@@ -331,8 +331,9 @@ words = {
 def cleanup():
   global program_words
   global word_pointer
+  global program_words_len
   clean_program_words = []
-  old_size = len(program_words)
+  old_size = program_words_len
   for col_word, (start, end) in colon_words.items():
     #if debug: print(f"coldef: {program_words[start-1:end]}")
     clean_program_words.extend(program_words[start-1:end])
@@ -359,6 +360,8 @@ def main():
   global error
   global do_cleanup
   global debug
+  global program_words_len
+
   memory = [None for i in range(memory_size)]
   return_stack = []
   data_stack = []
@@ -389,6 +392,7 @@ def main():
     except:
       print(f"ERROR: '{arg}' couldn't be loaded!")
       exit(1)
+  program_words_len = len(program_words)
   execute()
   if do_cleanup: cleanup()
 
@@ -415,6 +419,7 @@ def main():
     if continue_:
       continue
     program_words.extend(new_words)
+    program_words_len = len(program_words)
     execute()
     if not error:
       print("  ok" if not debug else "-- OK")
@@ -439,11 +444,12 @@ def execute():
   global here
   global error
   global debug
+  global program_words_len
 
   if debug: print(f"len(program_words) = {len(program_words)}")
 
   while True:
-    if word_pointer == len(program_words):
+    if word_pointer == program_words_len:
       return
 
     if debug: print(f"\n---- pointer = {word_pointer} ----")
