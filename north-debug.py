@@ -200,10 +200,10 @@ def repeat():
 def loop():
   global loop_stack
   global word_pointer
-  if debug: print(f"loop_stack = {loop_stack}")
   limit = loop_stack[-3]
   index = loop_stack[-4] + 1
   if debug:
+    print(f"loop_stack = {loop_stack}")
     print(f"limit = {limit}")
     print(f"index = {index}")
   if index < limit:
@@ -464,10 +464,11 @@ def execute():
     if word_pointer == program_words_len:
       return
 
-    if debug: print(f"\n---- pointer = {word_pointer} ----")
     word = program_words[word_pointer]
     defined = True if word in words else False
-    if debug: print(f"--- Word {word} ---")
+    if debug:
+      print(f"\n--- Word {word} ---")
+      print(f"---- pointer = {word_pointer} ----")
     if not defined:
       if debug: print("Immediate")
       try:
@@ -483,14 +484,15 @@ def execute():
 
     func = words[word]
     #if callable(func):
-    if debug: print(f"--- Func {func} ---")
-    if debug: print("Callable")
     argindex = len(data_stack) - func.__code__.co_argcount
     if argindex < 0:
       print("\nStack underflow")
-    if debug: print(f"argindex = {argindex}, type({type(argindex)})")
     args = data_stack[argindex:]
-    if debug: print(f"args = {args}, type({type(args)})")
+    if debug: 
+      print(f"--- Func {func} ---")
+      print("Callable")
+      print(f"argindex = {argindex}, type({type(argindex)})")
+      print(f"args = {args}, type({type(args)})")
     del data_stack[argindex:]
     data_stack.extend(func(*args) or ())
 
