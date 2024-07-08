@@ -23,6 +23,11 @@ def colon():
   # Next word is the word name
   word_pointer += 1
   word_name = program_words[word_pointer]
+  # Skip comment fo faster word execution
+  if program_words[word_pointer+1] == "(":
+    for word in program_words[word_pointer:]:
+      if word == ")": break
+      word_pointer += 1
   # Save the last word address before word words
   colon_words[word_name] = [word_pointer, 0]
   # Define the new word as a colon word
