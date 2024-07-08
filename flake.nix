@@ -12,6 +12,7 @@
          python3
          nano
          git
+         pypy
       ];
     };
 
