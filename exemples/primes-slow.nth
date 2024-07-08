@@ -1,0 +1,5 @@
+: divide? ( n1 n2 -- bool ) mod 0= ;
+: prime? true swap dup 2 do dup i divide? invert rot and swap loop drop ;
+: prime-numbers 2 do i prime? if i then loop ;
+
+4096 prime-numbers bye

@@ -1,0 +1,29 @@
+( Original:
+ : check-prime-number true SWAP DUP 2 DO DUP I is-not-divided-by ROT AND SWAP loop DROP ;
+ : is-prime-number DUP 2 > IF check-prime-number ELSE DROP true THEN ;
+ : prime-numbers 1 DO I is-prime-number IF I . THEN LOOP ;
+)
+( : prime? true swap dup 2 do dup i divide? invert rot and swap loop drop ; )
+( : prime-numbers 2 do i prime? if i then loop ; )
+
+2048 constant buffer-size
+
+: 2dup dup dup ;
+: to-much-primes buffer-size . 60 emit 1 exit ;
+
+buffer-size buffer constant primes
+: prime ( index -- n ) primes + ;
+: prime-add ( n -- ) -1 do 1+ 2dup buffer-size > if to-much-primes then prime @ -1 = until tuck prime ! 1+ -1 swap ! ;
+: init-primes -1 0 prime !  2 prime-add ;
+: clear-primes 128 0 do 0 i prime ! loop init-primes ;
+
+: divide? ( n1 n2 -- bool ) mod 0= ;
+: prime? ( n -- n b ) >r -1 do 1+ dup prime @ dup -1 = if 2drop r> true leave then
+  r@ swap divide? if drop r> false leave then again ;
+
+: emit-primes ( -- ) primes 1- do 1+ dup prime @ dup -1 = if 2drop leave then . again ;
+: calc-primes ( n -- ) 3 do i prime? if prime-add else drop then loop ;
+
+init-primes
+4096 calc-primes
+bye
