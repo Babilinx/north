@@ -291,7 +291,7 @@ words = {
   '.s': lambda: print(f"<{len(data_stack)}> {data_stack}", end=" "),
   'emit': lambda x: print(chr(int(x)), end=""),
   # Program flow
-  'debug': drop,
+  'debug': lambda x: (),
   'exit': lambda x: exit(x),
   'bye': bye,
   'cleanup': cleanup_,
