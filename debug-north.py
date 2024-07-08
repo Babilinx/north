@@ -3,7 +3,6 @@ import sys
 
 memory_size = 4096
 
-
 def docol():
   global program_words
   global colon_words
@@ -14,7 +13,7 @@ def docol():
     print(f"word_pointer = {word_pointer}")
     print(f"colon word address = {colon_words[program_words[word_pointer]][0]}")
   return_stack.append(word_pointer)
-  word_pointer = int(colon_words[program_words[word_pointer]][0])
+  word_pointer = colon_words[program_words[word_pointer]][0]
 
 def colon():
   global word_pointer
@@ -42,7 +41,7 @@ def semicolon():
   if debug:
     print(f"return_stack = {return_stack}")
     print("- docol end -")
-  word_pointer = int(return_stack.pop())
+  word_pointer = return_stack.pop()
 
 def allot(x):
   global here
