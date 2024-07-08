@@ -344,7 +344,6 @@ def main():
   variables = {}
   constants = {}
   here = 0
-  debug = False
   bye_ = False
   error = False
   do_cleanup = True
