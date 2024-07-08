@@ -241,7 +241,7 @@ def source():
 
 def debug_(x):
   global debug
-  debug = True if x == -1 else False
+  debug = True if x else False
 
 def bye():
   global bye_
@@ -249,7 +249,7 @@ def bye():
 
 def cleanup_(x):
   global do_cleanup
-  do_cleanup = True if x == 0 else False
+  do_cleanup = True if x else False
 
 def comment():
   global program_words
