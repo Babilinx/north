@@ -323,7 +323,6 @@ words = {
   '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
   '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
   'emit': lambda x: print(chr(int(x)), end=""),
-  'cr': lambda: print(),
   # Program flow
   'debug': debug_,
   'exit': lambda x: exit(x),

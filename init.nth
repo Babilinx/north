@@ -1,3 +1,4 @@
+: cell 1 ;
 : cells cell * ;
 : buffer cells here swap allot ;
 
@@ -16,3 +17,5 @@
 
 : invert if 0 else -1 then ;
 : abs dup 0< if 0 swap - then ;
+
+: cr 10 emit ;
