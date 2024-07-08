@@ -392,6 +392,8 @@ def main():
     print("### Args ###")
     print(f"{sys.argv[1:]}")
   for arg in sys.argv[1:]:
+    if arg in {"--profile", "-p"}:
+      continue
     try:
       program_words.extend(open(arg, "r").read().lower().split())
     except:
@@ -496,10 +498,16 @@ def execute():
 
 
 if __name__ == '__main__':
-  #profiler = cProfile.Profile()
-  #profiler.enable()
+  profile = False
+  
+  if "--profile" in sys.argv or "-p" in sys.argv:
+    profile = True
+
+  if profile:
+    profiler = cProfile.Profile()
+    profiler.enable()
   main()
-  #profiler.disable()
-  #stats = pstats.Stats(profiler).sort_stats('tottime')
-  #stats.print_stats()
-  #cProfile.run('main()')
+  if profile:
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('tottime')
+    stats.print_stats()
