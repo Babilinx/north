@@ -113,9 +113,9 @@ def if_(x):
   if debug:
     print(f"return_stack = {return_stack[-2:]}")
     print(f"branch_stack = {branch_stack[-1:]}")
-    print("-- Condition ", "False" if debug and x != 0 else "", "True" if debug and x == 0 else "")
-  # 0 is true
-  if x != 0:
+    print("-- Condition ", "False" if debug and x != -1 else "", "True" if debug and x == -1 else "")
+  # -1 is true
+  if x != -1:
     # word_pointer is 'else' or 'then'
     if else_:
        branch_stack.pop()
@@ -183,7 +183,7 @@ def leave():
 def while_(x):
   global word_pointer
   global loop_stack
-  if x != 0:
+  if x != -1:
     leave()
 
 def repeat():
@@ -215,7 +215,7 @@ def again():
 def until(x):
   global word_pointer
   global loop_stack
-  if x != 0:
+  if x != -1:
     word_pointer = loop_stack[-3]
   else:
     leave()
@@ -235,7 +235,7 @@ def source():
 
 def debug_(x):
   global debug
-  debug = True if x == 0 else False
+  debug = True if x == -1 else False
 
 def bye():
   global bye_
@@ -283,12 +283,12 @@ words = {
   'or': lambda y, x: (y | x,),
   'xor': lambda y, x: (y ^ x,),
   # Comparaison
-  '<': lambda y, x: (0 if y < x else 1,),
-  '>': lambda y, x: (0 if y > x else 1,),
-  '<=': lambda y, x: (0 if y <= x else 1,),
-  '>=': lambda y, x: (0 if y >= x else 1,),
-  '!=': lambda y, x: (0 if y != x else 1,),
-  '=': lambda y, x: (0 if y == x else 1,),
+  '<': lambda y, x: (-1 if y < x else 0,),
+  '>': lambda y, x: (-1 if y > x else 0,),
+  '<=': lambda y, x: (-1 if y <= x else 0,),
+  '>=': lambda y, x: (-1 if y >= x else 0,),
+  '!=': lambda y, x: (-1 if y != x else 0,),
+  '=': lambda y, x: (-1 if y == x else 0,),
   # Word definition
   ':': colon,
   ';': semicolon,
