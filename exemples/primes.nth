@@ -23,7 +23,8 @@ buffer-size buffer constant primes
 
 : emit-primes ( -- ) primes 1- do 1+ dup prime @ dup -1 = if 2drop leave then . again ;
 : calc-primes ( n -- ) 3 do i prime? if prime-add else drop then loop ;
+: count-primes ( -- ) buffer-size 0 do i prime @ -1 = if i . leave then loop ;
 
 init-primes
-4096 calc-primes
-bye
+( 4096 calc-primes
+bye )
