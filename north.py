@@ -117,10 +117,6 @@ def start_string():
   memory[string_ptr] = string
   return (string_ptr,)
 
-def string_print(ptr):
-  global memory
-  print(memory[ptr], end=" ")
-
 def rpush(x):
   global return_stack
   return_stack.append(x)
@@ -330,7 +326,6 @@ words = {
   # Strings
   '."': dot_quote,
   's"': start_string,
-  's.': string_print,
   # Branching
   'i': lambda: (loop_stack[-4],),
   'if': if_,
