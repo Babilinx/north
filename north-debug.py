@@ -19,15 +19,16 @@ def docol():
 
 def colon():
   global word_pointer
-  global program_words
+  global lower_program_words
   global colon_words
   global words
   # Next word is the word name
   word_pointer += 1
-  word_name = program_words[word_pointer]
+  word_name = lower_program_words[word_pointer]
   # Skip comment fo faster word execution
-  if program_words[word_pointer+1] == "(":
-    for word in program_words[word_pointer:]:
+  if lower_program_words[word_pointer+1] == "(":
+    lower_next_words = lower_program_words[word_pointer:]
+    for word in lower_next_words:
       if word == ")": break
       word_pointer += 1
   # Save the last word address before word words
@@ -35,7 +36,8 @@ def colon():
   # Define the new word as a colon word
   words[word_name] = docol
   if debug: print(f"word_name = {word_name}")
-  for word in program_words[word_pointer:]:
+  lower_next_words = lower_program_words[word_pointer:]
+  for word in lower_next_words:
     # Skip until end of colon definition
     if word == ";":
       colon_words[word_name][1] = word_pointer + 1
@@ -60,12 +62,12 @@ def store(data, ptr):
 
 def variable():
   global word_pointer
-  global program_words
+  global lower_program_words
   global variables
   global words
   global here
   word_pointer += 1
-  variable_name = program_words[word_pointer]
+  variable_name = lower_program_words[word_pointer]
   variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
   here += 1
@@ -73,20 +75,61 @@ def variable():
 
 def constant(x):
   global word_pointer
-  global program_words
+  global lower_program_words
   global constants
   global words
   word_pointer += 1
-  constant_name = program_words[word_pointer]
+  constant_name = lower_program_words[word_pointer]
   constants[constant_name] = x
   words[constant_name] = get_constant
 
 def get_constant():
   global word_pointer
-  global program_words
+  global lower_program_words
   global constants
-  constant_name = program_words[word_pointer]
+  constant_name = lower_program_words[word_pointer]
   return (constants[constant_name],)
+
+def dot_quote():
+  global word_pointer
+  global program_words
+  word_pointer += 1
+  string = ""
+  was_space = True
+  elements = " ".join(program_words[word_pointer:])
+  for c in elements:
+    if c == '"':
+      break
+    elif c == " " and not was_space:
+      was_space = True
+      word_pointer += 1
+    else: was_space = False
+    string += c
+  if debug: print(f"End of string = {word_pointer}")
+  print(string, end=" ") 
+
+def start_string():
+  global word_pointer
+  global program_words
+  global memory
+  global here
+  word_pointer += 1
+  string = ""
+  was_space = True
+  elements = " ".join(program_words[word_pointer:])
+  for c in elements:
+    if c == '"':
+      break
+    elif c == " " and not was_space:
+      was_space = True
+      word_pointer += 1
+    else: was_space = False
+    string += c
+  if debug: print(f"End of string = {word_pointer}")
+  string_ptr = here
+  here += 1
+  memory[string_ptr] = string
+  return (string_ptr,)
 
 def rpush(x):
   global return_stack
@@ -94,7 +137,7 @@ def rpush(x):
 
 def if_(x):
   global word_pointer
-  global program_words
+  global lower_program_words
   global return_stack
   global data_stack
   global branch_stack
@@ -102,7 +145,8 @@ def if_(x):
   if_times = 1
   else_ = False
   return_stack.append(word_pointer)
-  for word in program_words[word_pointer+1:]:
+  lower_next_words = lower_program_words[word_pointer+1:]
+  for word in lower_next_words:
     if word == 'if':
       if_times += 1
     elif word == 'else' and if_times == 1:
@@ -140,7 +184,7 @@ def else_():
 
 def do():
   global word_pointer
-  global program_words
+  global lower_program_words
   global data_stack
   global loop_stack
   global return_stack
@@ -148,7 +192,9 @@ def do():
   loop_stack.append(word_pointer)
   word_pointer += 1
   do_times = 1
-  for word in program_words[word_pointer+1:]:
+  lower_next_words = lower_program_words[word_pointer+1:]
+  for word in lower_next_words:
+    word = word.lower()
     if word == "do":
       do_times += 1
     elif word in {"repeat", "again", "until", "loop", "+loop"}:
@@ -233,13 +279,15 @@ def until(x):
 
 def source():
   global program_words
+  global lower_program_words
   global word_pointer
   global error
   word_pointer += 1
   filename = str(program_words[word_pointer])
   try:
-    file = open(filename, 'r').read().lower()
-    program_words.extend(file.split())
+    file_words = open(filename, 'r').read().split()
+    program_words.extend(file_words)
+    lower_program_words.extend(file_words.lower())
   except FileNotFoundError:
     print(f"\nError: can't open file '{filename}'")
     error = True
@@ -261,7 +309,8 @@ def comment():
   global word_pointer
   comment_times = 1
   word_pointer += 1
-  for word in program_words[word_pointer:]:
+  next_words = program_words[word_pointer:]
+  for word in next_words:
     if word == ")":
       comment_times -= 1
     elif word == "(":
@@ -311,6 +360,9 @@ words = {
   '@': lambda ptr: (memory[ptr],),
   'variable': variable,
   'constant': constant,
+  # Strings
+  '."': dot_quote,
+  's"': start_string,
   # Branching
   'i': lambda: (loop_stack[-4],),
   'if': if_,
@@ -361,6 +413,7 @@ def main():
   global branch_stack
   global loop_stack
   global program_words
+  global lower_program_words
   global word_pointer
   global colon_words
   global memory
@@ -379,6 +432,7 @@ def main():
   branch_stack = []
   loop_stack = []
   program_words = []
+  lower_program_words = []
   word_pointer = 0
   colon_words = {}
   variables = {}
@@ -390,7 +444,9 @@ def main():
   do_cleanup = False
 
   try:
-    program_words.extend(open("init.nth", "r").read().lower().split())
+    init_words = open("init.nth", "r").read().split()
+    program_words.extend(init_words)
+    lower_program_words.extend([x.lower() for x in init_words])
   except:
     print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
@@ -401,7 +457,9 @@ def main():
     if arg in {"--profile", "-p"}:
       continue
     try:
-      program_words.extend(open(arg, "r").read().lower().split())
+      file_words = open(arg, "r").read().split()
+      program_words.extend(file_words)
+      lower_program_words.extend([x.lower() for x in file_words])
     except:
       print(f"ERROR: '{arg}' couldn't be loaded!")
       exit(1)
@@ -414,17 +472,19 @@ def main():
     colon_def = False
     comment = False
     source = False
-    input_words = input("> ")
-    print(f"\033[1A", input_words, end=" ")
-    new_words = input_words.lower().split()
-    for word in new_words:
+    input_ = input("> ")
+    print(f"\033[1A", input_, end=" ")
+    input_words = input_.split()
+    new_words = input_words
+    lower_new_words = [x.lower() for x in input_words]
+    for word, lower_word in zip(new_words, lower_new_words):
       if word == ":":
         colon_def = True
       elif word == "(":
         comment = True
-      elif word == "source":
+      elif lower_word == "source":
         source = True
-      if not word in words and word.isdigit() and colon_def and comment and source:
+      if not lower_word in words and word.isdigit() and colon_def and comment and source:
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
@@ -437,6 +497,7 @@ def main():
     if continue_:
       continue
     program_words.extend(new_words)
+    lower_program_words.extend([x.lower() for x in new_words])
     program_words_len = len(program_words)
     execute()
     if not error:
@@ -454,6 +515,7 @@ def execute():
   global branch_stack
   global loop_stack
   global program_words
+  global lower_program_words
   global word_pointer
   global colon_words
   global memory
@@ -471,11 +533,11 @@ def execute():
       return
 
     word = program_words[word_pointer]
-    defined = True if word in words else False
+    lower_word = lower_program_words[word_pointer]
     if debug:
       print(f"\n--- Word {word} ---")
       print(f"---- pointer = {word_pointer} ----")
-    if not defined:
+    if not lower_word in words:
       if debug: print("Immediate")
       try:
         data_stack.append(int(word))
@@ -483,12 +545,12 @@ def execute():
         continue
       # Undefined word
       except ValueError:
-        print(f"\nError: Word '{word}' is undefined!")
+        print(f"\nError: Word '{lower_word}' is undefined!")
         error = True
         word_pointer += 1
         continue
 
-    func = words[word]
+    func = words[lower_word]
     #if callable(func):
     argindex = len(data_stack) - func.__code__.co_argcount
     if argindex < 0:

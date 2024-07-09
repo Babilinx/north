@@ -19,3 +19,5 @@
 : abs dup 0< if 0 swap - then ;
 
 : cr 10 emit ;
+
+: ". @ . ;
