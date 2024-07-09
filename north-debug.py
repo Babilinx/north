@@ -88,6 +88,51 @@ def get_constant():
   constant_name = program_words[word_pointer]
   return (constants[constant_name],)
 
+def dot_quote():
+  global word_pointer
+  global program_words
+  word_pointer += 1
+  string = ""
+  was_space = True
+  elements = " ".join(program_words[word_pointer:])
+  for c in elements:
+    if c == '"':
+      break
+    elif c == " " and not was_space:
+      was_space = True
+      word_pointer += 1
+    else: was_space = False
+    string += c
+  if debug: print(f"End of string = {word_pointer}")
+  print(string, end=" ") 
+
+def start_string():
+  global word_pointer
+  global program_words
+  global memory
+  global here
+  word_pointer += 1
+  string = ""
+  was_space = True
+  elements = " ".join(program_words[word_pointer:])
+  for c in elements:
+    if c == '"':
+      break
+    elif c == " " and not was_space:
+      was_space = True
+      word_pointer += 1
+    else: was_space = False
+    string += c
+  if debug: print(f"End of string = {word_pointer}")
+  string_ptr = here
+  here += 1
+  memory[string_ptr] = string
+  return (string_ptr,)
+
+def string_print(ptr):
+  global memory
+  print(memory[ptr], end=" ")
+
 def rpush(x):
   global return_stack
   return_stack.append(x)
@@ -311,6 +356,10 @@ words = {
   '@': lambda ptr: (memory[ptr],),
   'variable': variable,
   'constant': constant,
+  # Strings
+  '."': dot_quote,
+  's"': start_string,
+  's.': string_print,
   # Branching
   'i': lambda: (loop_stack[-4],),
   'if': if_,
