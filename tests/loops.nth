@@ -5,3 +5,6 @@ cr
 10 do 69 . 1 - dup until drop
 cr
 10 1 do i . loop
+cr
+69 0 do i . 2 +loop
+cr
