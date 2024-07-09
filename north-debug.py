@@ -75,19 +75,19 @@ def variable():
 
 def constant(x):
   global word_pointer
-  global lower_program_words
+  global program_words
   global constants
   global words
   word_pointer += 1
-  constant_name = lower_program_words[word_pointer]
+  constant_name = program_words[word_pointer]
   constants[constant_name] = x
   words[constant_name] = get_constant
 
 def get_constant():
   global word_pointer
-  global lower_program_words
+  global program_words
   global constants
-  constant_name = lower_program_words[word_pointer]
+  constant_name = program_words[word_pointer]
   return (constants[constant_name],)
 
 def dot_quote():
