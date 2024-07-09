@@ -151,7 +151,7 @@ def do():
   for word in program_words[word_pointer+1:]:
     if word == "do":
       do_times += 1
-    elif word in {"repeat", "again", "until", "loop"}:
+    elif word in {"repeat", "again", "until", "loop", "+loop"}:
       do_times -= 1
     if do_times == 0:
       '''
@@ -159,7 +159,7 @@ def do():
         [ start_address, *data, len(data), end_address ]
       '''
       # End of 'do' definition
-      if word == "loop":
+      if word in {"loop", "+loop"}:
         # index = loop_stack[-3], limit = loop_stack[-4]
         loop_stack.extend((data_stack.pop(), data_stack.pop()))
         loop_stack.append(2)
@@ -200,6 +200,17 @@ def loop():
     print(f"loop_stack = {loop_stack}")
     print(f"limit = {limit}")
     print(f"index = {index}")
+  if index < limit:
+    word_pointer = loop_stack[-5]
+    loop_stack[-4] = index
+  else:
+    leave()
+
+def plus_loop(x):
+  global loop_stack
+  global word_pointer
+  limit = loop_stack[-3]
+  index = loop_stack[-4] + x
   if index < limit:
     word_pointer = loop_stack[-5]
     loop_stack[-4] = index
@@ -310,6 +321,7 @@ words = {
   'while': while_,
   'repeat': repeat,
   'loop': loop,
+  '+loop': plus_loop,
   'until': until,
   'again': again,
   # I/O
