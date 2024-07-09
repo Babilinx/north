@@ -151,13 +151,7 @@ def do():
   for word in program_words[word_pointer+1:]:
     if word == "do":
       do_times += 1
-    elif word == "repeat":
-      do_times -= 1
-    elif word == "again":
-      do_times -= 1
-    elif word == "until":
-      do_times -= 1
-    elif word == "loop":
+    elif word in {"repeat", "again", "until", "loop"}:
       do_times -= 1
     if do_times == 0:
       '''
