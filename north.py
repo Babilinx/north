@@ -18,7 +18,7 @@ def colon():
   global words
   # Next word is the word name
   word_pointer += 1
-  word_name = program_words[word_pointer]
+  word_name = program_words[word_pointer].lower()
   # Skip comment fo faster word execution
   if program_words[word_pointer+1] == "(":
     for word in program_words[word_pointer:]:
@@ -55,7 +55,7 @@ def variable():
   global words
   global here
   word_pointer += 1
-  variable_name = program_words[word_pointer]
+  variable_name = program_words[word_pointer].lower()
   variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
   here += 1
@@ -67,7 +67,7 @@ def constant(x):
   global constants
   global words
   word_pointer += 1
-  constant_name = program_words[word_pointer]
+  constant_name = program_words[word_pointer].lower()
   constants[constant_name] = x
   words[constant_name] = get_constant
 
@@ -75,7 +75,7 @@ def get_constant():
   global word_pointer
   global program_words
   global constants
-  constant_name = program_words[word_pointer]
+  constant_name = program_words[word_pointer].lower()
   return (constants[constant_name],)
 
 def dot_quote():
@@ -132,6 +132,7 @@ def if_(x):
   else_ = False
   return_stack.append(word_pointer)
   for word in program_words[word_pointer+1:]:
+    word = word.lower()
     if word == 'if':
       if_times += 1
     elif word == 'else' and if_times == 1:
@@ -172,6 +173,7 @@ def do():
   word_pointer += 1
   do_times = 1
   for word in program_words[word_pointer+1:]:
+    word = word.lower()
     if word == "do":
       do_times += 1
     elif word in {"repeat", "again", "until", "loop", "+loop"}:
@@ -255,7 +257,7 @@ def source():
   word_pointer += 1
   filename = str(program_words[word_pointer])
   try:
-    file = open(filename, 'r').read().lower()
+    file = open(filename, 'r').read()
     program_words.extend(file.split())
   except FileNotFoundError:
     print(f"\nError: can't open file '{filename}'")
@@ -403,13 +405,13 @@ def main():
   do_cleanup = False
 
   try:
-    program_words.extend(open("init.nth", "r").read().lower().split())
+    program_words.extend(open("init.nth", "r").read().split())
   except:
     print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
   for arg in sys.argv[1:]:
     try:
-      program_words.extend(open(arg, "r").read().lower().split())
+      program_words.extend(open(arg, "r").read().split())
     except:
       print(f"ERROR: '{arg}' couldn't be loaded!")
       exit(1)
@@ -424,15 +426,15 @@ def main():
     source = False
     input_words = input("> ")
     print(f"\033[1A", input_words, end=" ")
-    new_words = input_words.lower().split()
+    new_words = input_words.split()
     for word in new_words:
       if word == ":":
         colon_def = True
       elif word == "(":
         comment = True
-      elif word == "source":
+      elif word.lower() == "source":
         source = True
-      if not word in words and word.isdigit() and colon_def and comment and source:
+      if not word.lower() in words and word.isdigit() and colon_def and comment and source:
         print(f"\nERROR: Undefined word '{word}'")
         continue_ = True
         break
@@ -476,7 +478,7 @@ def execute():
       return
 
     word = program_words[word_pointer]
-    defined = True if word in words else False
+    defined = True if word.lower() in words else False
     if not defined:
       try:
         data_stack.append(int(word))
@@ -489,7 +491,7 @@ def execute():
         word_pointer += 1
         continue
 
-    func = words[word]
+    func = words[word.lower()]
     argindex = len(data_stack) - func.__code__.co_argcount
     args = data_stack[argindex:]
     del data_stack[argindex:]
