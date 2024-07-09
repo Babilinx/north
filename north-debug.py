@@ -381,7 +381,7 @@ def main():
   debug = False
   bye_ = False
   error = False
-  do_cleanup = True
+  do_cleanup = False
 
   try:
     program_words.extend(open("init.nth", "r").read().lower().split())
