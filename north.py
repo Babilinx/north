@@ -270,7 +270,7 @@ def source():
     file_words = open(filename, 'r').read().split()
     program_words.extend(file_words)
     lower_program_words.extend([x.lower() for x in file_words])
-  except FileNotFoundError:
+  except:
     print("\nError: can't open file '{}'".format(filename))
     error = True
 
