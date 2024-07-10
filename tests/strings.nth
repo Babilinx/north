@@ -1,0 +1,4 @@
+." 69 sixty  nine" cr
+s" 69 sixty  nine" constant sixty-nine-str
+sixty-nine-str s. cr
+
