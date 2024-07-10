@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import sys
-import cProfile
-import pstats
+import os
 import ion
 import kandinsky as k
 
@@ -522,19 +520,6 @@ def main():
   except:
     print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
-  if debug:
-    print("### Args ###")
-    print(sys.argv[1:])
-  for arg in sys.argv[1:]:
-    if arg in {"--profile", "-p"}:
-      continue
-    try:
-      file_words = open(arg, "r").read().split()
-      program_words.extend(file_words)
-      lower_program_words.extend([x.lower() for x in file_words])
-    except:
-      print("ERROR: '{}' couldn't be loaded!".format(arg))
-      exit(1)
   program_words_len = len(program_words)
   execute()
   if do_cleanup: cleanup()
@@ -640,16 +625,5 @@ def execute():
 
 
 if __name__ == '__main__':
-  profile = False
-  
-  if "--profile" in sys.argv or "-p" in sys.argv:
-    profile = True
-
-  if profile:
-    profiler = cProfile.Profile()
-    profiler.enable()
   main()
-  if profile:
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('tottime')
-    stats.print_stats()
+

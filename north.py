@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
-#import ion
-#import kandinsky as k
+import ion
+import kandinsky as k
 
 memory_size = 4096
 
@@ -483,21 +482,13 @@ def main():
   error = False
   do_cleanup = False
 
-  #try:
-  init_words = open("init.nth", "r").read().split()
-  program_words.extend(init_words)
-  lower_program_words.extend([x.lower() for x in init_words])
-  #except:
-    #print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
+  try:
+    init_words = open("init.nth", "r").read().split()
+    program_words.extend(init_words)
+    lower_program_words.extend([x.lower() for x in init_words])
+  except:
+    print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
-  for arg in sys.argv[1:]:
-    try:
-      file_words = open(arg, "r").read().split()
-      program_words.extend(file_words)
-      lower_program_words.extend([x.lower() for x in file_words])
-    except:
-      print("ERROR: '{}' couldn't be loaded!".format(arg))
-      exit(1)
   program_words_len = len(program_words)
   execute()
   if do_cleanup: cleanup()
