@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import sys
+import os
+#import ion
+#import kandinsky as k
 
 memory_size = 4096
 
@@ -363,6 +366,24 @@ words = {
   'cleanup': cleanup_,
   # Comments
   '(': comment,
+  ## Numworks modules
+  # Ion
+  'key': lambda: (" ".join(ion.get_keys()),),
+  '?key': lambda x: (-1 if ion.keydown(x) else 0,),
+  'battery': lambda: (ion.battery_level(),),
+  'vbattery': lambda: (ion.battery(),),
+  '?charging': (-1 if ion.battery_ischarging() else 0,),
+  '>brightness': lambda x: ion.set_brightness(x),
+  'brightness>': lambda: (ion.get_brightness(),),
+  # Kandinsky
+  'pixel>': lambda y, x: k.get_pixel(x, y),
+  '>pixel': lambda b, r, g, y, x: k.set_pixel(x, y, (r,g,b)),
+  'puts': lambda string, y, x: k.draw_string(memory[string], x, y),
+  'line': lambda b,r,g, y2,x2, y1,x1: k.draw_line(x1,y1,x2,y2,(r,g,b)),
+  'circle': lambda b,r,g, R, y, x: k.draw_circle(x, y, R, (r,g,b)),
+  'fcircle': lambda b,r,g, R, y, x: k.fill_circle(x, y, R, (r,g,b)),
+  'frect': lambda b,r,g, h, w, y, x: k.fill_rect(x, y, w, h, (r,g,b)),
+  'palette': lambda key: k.get_palette()[memory[key]],
 }
 
 words_argc = {
@@ -400,6 +421,15 @@ words_argc = {
   'cleanup': 1,
   # Comments
   '(': 0,
+  ## Numworks modules
+  # Ion
+  'key': 0,    '?key': 1,    'battery': 0,
+  'vbattery': 0,             '?charging': 0,
+  '>brightness': 1,          'brightness>': 0,
+  # Kandinsky
+  'pixel>': 2, '>pixel': 5,  'puts': 3,
+  'line': 7,   'circle': 6,  'fcircle': 6,
+  'frect': 7,  'palette': 1,
 }
 
 
