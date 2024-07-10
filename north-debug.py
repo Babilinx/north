@@ -12,8 +12,8 @@ def docol():
   global word_pointer
   if debug:
     print("- docol -")
-    print(f"word_pointer = {word_pointer}")
-    print(f"colon word address = {colon_words[program_words[word_pointer]][0]}")
+    print("word_pointer = {}".format(word_pointer))
+    print("colon word address = {}".format(colon_words[program_words[word_pointer]][0]))
   return_stack.append(word_pointer)
   word_pointer = colon_words[program_words[word_pointer]][0]
 
@@ -37,7 +37,7 @@ def colon():
   # Define the new word as a colon word
   words[word_name] = docol
   words_argc[word_name] = 0
-  if debug: print(f"word_name = {word_name}")
+  if debug: print("word_name = {}".format(word_name))
   lower_next_words = lower_program_words[word_pointer:]
   for word in lower_next_words:
     # Skip until end of colon definition
@@ -50,7 +50,7 @@ def semicolon():
   global word_pointer
   global return_stack
   if debug:
-    print(f"return_stack = {return_stack}")
+    print("return_stack = {}".format(return_stack))
     print("- docol end -")
   word_pointer = return_stack.pop()
 
@@ -111,7 +111,7 @@ def dot_quote():
       word_pointer += 1
     else: was_space = False
     string += c
-  if debug: print(f"End of string = {word_pointer}")
+  if debug: print("End of string = {}".format(word_pointer))
   print(string, end=" ") 
 
 def start_string():
@@ -131,7 +131,7 @@ def start_string():
       word_pointer += 1
     else: was_space = False
     string += c
-  if debug: print(f"End of string = {word_pointer}")
+  if debug: print("End of string = {}".format(word_pointer))
   string_ptr = here
   here += 1
   memory[string_ptr] = string
@@ -156,7 +156,7 @@ def if_(x):
     if word == 'if':
       if_times += 1
     elif word == 'else' and if_times == 1:
-      if debug: print(f"Found 'else' at {word_pointer}")
+      if debug: print("Found 'else' at {}".format(word_pointer))
       branch_stack.append(word_pointer+1)
       else_ = True
     elif word == 'then':
@@ -167,8 +167,8 @@ def if_(x):
     word_pointer += 1
 
   if debug:
-    print(f"return_stack = {return_stack[-2:]}")
-    print(f"branch_stack = {branch_stack[-1:]}")
+    print("return_stack = {}".format(return_stack[-2:]))
+    print("branch_stack = {}".format(branch_stack[-1:]))
     print("-- Condition ", "False" if debug and x != -1 else "", "True" if debug and x == -1 else "")
   # -1 is true
   if x != -1:
@@ -185,7 +185,7 @@ def if_(x):
 def else_():
   global word_pointer
   global branch_stack
-  if debug: print(f"branch_stack = {branch_stack[-1:]}")
+  if debug: print("branch_stack = {}".format(branch_stack[-1:]))
   word_pointer = branch_stack.pop()
 
 def do():
@@ -221,7 +221,7 @@ def do():
       break
     word_pointer += 1
 
-  if debug: print(f"loop_stack = {loop_stack}")
+  if debug: print("loop_stack = {}".format(loop_stack))
   word_pointer = return_stack.pop()
 
 def leave():
@@ -249,9 +249,9 @@ def loop():
   limit = loop_stack[-3]
   index = loop_stack[-4] + 1
   if debug:
-    print(f"loop_stack = {loop_stack}")
-    print(f"limit = {limit}")
-    print(f"index = {index}")
+    print("loop_stack = {}".format(loop_stack))
+    print("limit = {}".format(limit))
+    print("index = {}".format(index))
   if index < limit:
     word_pointer = loop_stack[-5]
     loop_stack[-4] = index
@@ -272,7 +272,7 @@ def plus_loop(x):
 def again():
   global word_pointer
   global loop_stack
-  if debug: print(f"loop_stack = {loop_stack[-3]}")
+  if debug: print("loop_stack = {}".format(loop_stack[-3]))
   word_pointer = loop_stack[-3]
 
 def until(x):
@@ -295,7 +295,7 @@ def source():
     program_words.extend(file_words)
     lower_program_words.extend(file_words.lower())
   except FileNotFoundError:
-    print(f"\nError: can't open file '{filename}'")
+    print("\nError: can't open file '{}'".format(filename))
     error = True
 
 def debug_(x):
@@ -322,7 +322,7 @@ def comment():
     elif word == "(":
       comment_times += 1
     if comment_times == 0:
-      if debug: print(f"comment_end = {word_pointer}")
+      if debug: print("comment_end = {}".format(word_pointer))
       break
     word_pointer += 1
 
@@ -385,7 +385,7 @@ words = {
   # I/O
   'source': source,
   '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
-  '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
+  '.s': lambda: print("-- Print " if debug else "", "<{}> {}".format(len(data_stack), data_stack), end="\n" if debug else " "),
   'emit': lambda x: print(chr(int(x)), end=""),
   # Program flow
   'debug': debug_,
@@ -495,7 +495,7 @@ def main():
 
   if debug:
     print("### Args ###")
-    print(f"{sys.argv[1:]}")
+    print(sys.argv[1:])
   for arg in sys.argv[1:]:
     if arg in {"--profile", "-p"}:
       continue
@@ -504,7 +504,7 @@ def main():
       program_words.extend(file_words)
       lower_program_words.extend([x.lower() for x in file_words])
     except:
-      print(f"ERROR: '{arg}' couldn't be loaded!")
+      print("ERROR: '{}' couldn't be loaded!".format(arg))
       exit(1)
   program_words_len = len(program_words)
   execute()
@@ -516,7 +516,7 @@ def main():
     comment = False
     source = False
     input_ = input("> ")
-    print(f"\033[1A", input_, end=" ")
+    print("\033[1A", input_, end=" ")
     input_words = input_.split()
     new_words = input_words
     lower_new_words = [x.lower() for x in input_words]
@@ -528,7 +528,7 @@ def main():
       elif lower_word == "source":
         source = True
       if not lower_word in words and word.isdigit() and colon_def and comment and source:
-        print(f"\nERROR: Undefined word '{word}'")
+        print("\nERROR: Undefined word '{}'".format(word))
         continue_ = True
         break
       if word == ")":
@@ -569,7 +569,7 @@ def execute():
   global debug
   global program_words_len
 
-  if debug: print(f"len(program_words) = {len(program_words)}")
+  if debug: print("len(program_words) = {}".format(len(program_words)))
 
   while True:
     if word_pointer == program_words_len:
@@ -578,8 +578,8 @@ def execute():
     word = program_words[word_pointer]
     lower_word = lower_program_words[word_pointer]
     if debug:
-      print(f"\n--- Word {word} ---")
-      print(f"---- pointer = {word_pointer} ----")
+      print("\n--- Word {} ---".format(word))
+      print("---- pointer = {} ----".format(word_pointer))
     if not lower_word in words:
       if debug: print("Immediate")
       try:
@@ -588,7 +588,7 @@ def execute():
         continue
       # Undefined word
       except ValueError:
-        print(f"\nError: Word '{lower_word}' is undefined!")
+        print("\nError: Word '{}' is undefined!".format(lower_word))
         error = True
         word_pointer += 1
         continue
@@ -600,10 +600,10 @@ def execute():
       print("\nStack underflow")
     args = data_stack[argindex:]
     if debug: 
-      print(f"--- Func {func} ---")
+      print("--- Func {} ---".format(func))
       print("Callable")
-      print(f"argindex = {argindex}, type({type(argindex)})")
-      print(f"args = {args}, type({type(args)})")
+      print("argindex = {}".format(argindex))
+      print("args = {}".format(args))
     del data_stack[argindex:]
     data_stack.extend(func(*args) or ())
 

@@ -269,7 +269,7 @@ def source():
     program_words.extend(file_words)
     lower_program_words.extend([x.lower() for x in file_words])
   except FileNotFoundError:
-    print(f"\nError: can't open file '{filename}'")
+    print("\nError: can't open file '{}'".format(filename))
     error = True
 
 def bye():
@@ -354,7 +354,7 @@ words = {
   # I/O
   'source': source,
   '.': lambda x: print(x, end=" "),
-  '.s': lambda: print(f"<{len(data_stack)}> {data_stack}", end=" "),
+  '.s': lambda: print("<{}> {}".format(len(data_stack), data_stack), end=" "),
   'emit': lambda x: print(chr(int(x)), end=""),
   # Program flow
   'debug': lambda x: (),
@@ -466,7 +466,7 @@ def main():
       program_words.extend(file_words)
       lower_program_words.extend([x.lower() for x in file_words])
     except:
-      print(f"ERROR: '{arg}' couldn't be loaded!")
+      print("ERROR: '{}' couldn't be loaded!".format(arg))
       exit(1)
   program_words_len = len(program_words)
   execute()
@@ -478,7 +478,7 @@ def main():
     comment = False
     source = False
     input_ = input("> ")
-    print(f"\033[1A", input_, end=" ")
+    print("\033[1A", input_, end=" ")
     input_words = input_.split()
     new_words = input_words
     lower_new_words = [x.lower() for x in input_words]
@@ -490,7 +490,7 @@ def main():
       elif lower_word == "source":
         source = True
       if not lower_word in words and word.isdigit() and colon_def and comment and source:
-        print(f"\nERROR: Undefined word '{lower_word}'")
+        print("\nERROR: Undefined word '{}'".format(lower_word))
         continue_ = True
         break
       if word == ")":
@@ -543,7 +543,7 @@ def execute():
         continue
       # Undefined word
       except ValueError:
-        print(f"\nError: Word '{lower_word}' is undefined!")
+        print("\nError: Word '{}' is undefined!".format(lower_word))
         error = True
         word_pointer += 1
         continue
