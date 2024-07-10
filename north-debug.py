@@ -22,6 +22,7 @@ def colon():
   global lower_program_words
   global colon_words
   global words
+  global words_argc
   # Next word is the word name
   word_pointer += 1
   word_name = lower_program_words[word_pointer]
@@ -35,6 +36,7 @@ def colon():
   colon_words[word_name] = [word_pointer, 0]
   # Define the new word as a colon word
   words[word_name] = docol
+  words_argc[word_name] = 0
   if debug: print(f"word_name = {word_name}")
   lower_next_words = lower_program_words[word_pointer:]
   for word in lower_next_words:
@@ -65,11 +67,13 @@ def variable():
   global lower_program_words
   global variables
   global words
+  global words_argc
   global here
   word_pointer += 1
   variable_name = lower_program_words[word_pointer]
   variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
+  words_argc[variable_name] = 0
   here += 1
   return (variable_ptr,)
 
@@ -78,10 +82,12 @@ def constant(x):
   global program_words
   global constants
   global words
+  global words_argc
   word_pointer += 1
   constant_name = program_words[word_pointer]
   constants[constant_name] = x
   words[constant_name] = get_constant
+  words_argc[constant_name] = 0
 
 def get_constant():
   global word_pointer
@@ -390,6 +396,43 @@ words = {
   '(': comment,
 }
 
+words_argc = {
+  # Stack operations
+  'dup': 1,    'drop': 1,    'swap': 2,
+  'over': 2,   'rot': 3,     'nip': 2,
+  'tuck': 2,   '>r': 1,      'r>': 0,
+  'r@': 0,
+  # Arithmetic
+  '+': 2,      '-': 2,       '*': 2,
+  '/': 2,      'mod': 2,
+  # Logic
+  'and': 2,    'or': 2,      'xor': 2,
+  # Comparaison
+  '<': 2,      '>': 2,       '<=': 2,
+  '>=': 2,     '!=': 2,      '=': 2,
+  # Word definition
+  ':': 0,      ';': 0,
+  # Memory
+  'here': 0,   'allot': 1,   'cell': 0,
+  '!': 2,      '@': 1,       'variable': 0,
+  'constant': 1,
+  # Strings
+  '."': 0,     's"': 0,
+  # Branching
+  'i': 0,      'if': 1,      'else': 0,
+  'then': 0,   'do': 0,      'leave': 0,
+  'while': 1,  'repeat': 0,  'loop': 0,
+  '+loop': 1,  'until': 1,   'again': 0,
+  # I/O
+  'source': 0, '.': 1,       '.s': 0,
+  'emit': 1,
+  # Program flow
+  'debug': 1,  'exit': 1,    'bye': 0,
+  'cleanup': 1,
+  # Comments
+  '(': 0,
+}
+
 
 def cleanup():
   global program_words
@@ -551,8 +594,8 @@ def execute():
         continue
 
     func = words[lower_word]
-    #if callable(func):
-    argindex = len(data_stack) - func.__code__.co_argcount
+    argc = words_argc[lower_word]
+    argindex = len(data_stack) - argc
     if argindex < 0:
       print("\nStack underflow")
     args = data_stack[argindex:]
