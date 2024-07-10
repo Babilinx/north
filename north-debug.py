@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import sys
-import cProfile
-import pstats
+import os
+import ion
+import kandinsky as k
 
 memory_size = 4096
 
@@ -12,8 +12,8 @@ def docol():
   global word_pointer
   if debug:
     print("- docol -")
-    print(f"word_pointer = {word_pointer}")
-    print(f"colon word address = {colon_words[program_words[word_pointer]][0]}")
+    print("word_pointer = {}".format(word_pointer))
+    print("colon word address = {}".format(colon_words[program_words[word_pointer]][0]))
   return_stack.append(word_pointer)
   word_pointer = colon_words[program_words[word_pointer]][0]
 
@@ -22,6 +22,7 @@ def colon():
   global lower_program_words
   global colon_words
   global words
+  global words_argc
   # Next word is the word name
   word_pointer += 1
   word_name = lower_program_words[word_pointer]
@@ -35,7 +36,8 @@ def colon():
   colon_words[word_name] = [word_pointer, 0]
   # Define the new word as a colon word
   words[word_name] = docol
-  if debug: print(f"word_name = {word_name}")
+  words_argc[word_name] = 0
+  if debug: print("word_name = {}".format(word_name))
   lower_next_words = lower_program_words[word_pointer:]
   for word in lower_next_words:
     # Skip until end of colon definition
@@ -48,7 +50,7 @@ def semicolon():
   global word_pointer
   global return_stack
   if debug:
-    print(f"return_stack = {return_stack}")
+    print("return_stack = {}".format(return_stack))
     print("- docol end -")
   word_pointer = return_stack.pop()
 
@@ -65,11 +67,13 @@ def variable():
   global lower_program_words
   global variables
   global words
+  global words_argc
   global here
   word_pointer += 1
   variable_name = lower_program_words[word_pointer]
   variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
+  words_argc[variable_name] = 0
   here += 1
   return (variable_ptr,)
 
@@ -78,10 +82,12 @@ def constant(x):
   global program_words
   global constants
   global words
+  global words_argc
   word_pointer += 1
   constant_name = program_words[word_pointer]
   constants[constant_name] = x
   words[constant_name] = get_constant
+  words_argc[constant_name] = 0
 
 def get_constant():
   global word_pointer
@@ -105,7 +111,7 @@ def dot_quote():
       word_pointer += 1
     else: was_space = False
     string += c
-  if debug: print(f"End of string = {word_pointer}")
+  if debug: print("End of string = {}".format(word_pointer))
   print(string, end=" ") 
 
 def start_string():
@@ -125,7 +131,7 @@ def start_string():
       word_pointer += 1
     else: was_space = False
     string += c
-  if debug: print(f"End of string = {word_pointer}")
+  if debug: print("End of string = {}".format(word_pointer))
   string_ptr = here
   here += 1
   memory[string_ptr] = string
@@ -150,7 +156,7 @@ def if_(x):
     if word == 'if':
       if_times += 1
     elif word == 'else' and if_times == 1:
-      if debug: print(f"Found 'else' at {word_pointer}")
+      if debug: print("Found 'else' at {}".format(word_pointer))
       branch_stack.append(word_pointer+1)
       else_ = True
     elif word == 'then':
@@ -161,8 +167,8 @@ def if_(x):
     word_pointer += 1
 
   if debug:
-    print(f"return_stack = {return_stack[-2:]}")
-    print(f"branch_stack = {branch_stack[-1:]}")
+    print("return_stack = {}".format(return_stack[-2:]))
+    print("branch_stack = {}".format(branch_stack[-1:]))
     print("-- Condition ", "False" if debug and x != -1 else "", "True" if debug and x == -1 else "")
   # -1 is true
   if x != -1:
@@ -179,7 +185,7 @@ def if_(x):
 def else_():
   global word_pointer
   global branch_stack
-  if debug: print(f"branch_stack = {branch_stack[-1:]}")
+  if debug: print("branch_stack = {}".format(branch_stack[-1:]))
   word_pointer = branch_stack.pop()
 
 def do():
@@ -215,7 +221,7 @@ def do():
       break
     word_pointer += 1
 
-  if debug: print(f"loop_stack = {loop_stack}")
+  if debug: print("loop_stack = {}".format(loop_stack))
   word_pointer = return_stack.pop()
 
 def leave():
@@ -243,9 +249,9 @@ def loop():
   limit = loop_stack[-3]
   index = loop_stack[-4] + 1
   if debug:
-    print(f"loop_stack = {loop_stack}")
-    print(f"limit = {limit}")
-    print(f"index = {index}")
+    print("loop_stack = {}".format(loop_stack))
+    print("limit = {}".format(limit))
+    print("index = {}".format(index))
   if index < limit:
     word_pointer = loop_stack[-5]
     loop_stack[-4] = index
@@ -266,7 +272,7 @@ def plus_loop(x):
 def again():
   global word_pointer
   global loop_stack
-  if debug: print(f"loop_stack = {loop_stack[-3]}")
+  if debug: print("loop_stack = {}".format(loop_stack[-3]))
   word_pointer = loop_stack[-3]
 
 def until(x):
@@ -288,8 +294,8 @@ def source():
     file_words = open(filename, 'r').read().split()
     program_words.extend(file_words)
     lower_program_words.extend(file_words.lower())
-  except FileNotFoundError:
-    print(f"\nError: can't open file '{filename}'")
+  except:
+    print("\nError: can't open file '{}'".format(filename))
     error = True
 
 def debug_(x):
@@ -316,9 +322,24 @@ def comment():
     elif word == "(":
       comment_times += 1
     if comment_times == 0:
-      if debug: print(f"comment_end = {word_pointer}")
+      if debug: print("comment_end = {}".format(word_pointer))
       break
     word_pointer += 1
+
+def import_():
+  global program_words
+  global lower_program_words
+  global word_pointer
+  global error
+  word_pointer += 1
+  filename = str(program_words[word_pointer])
+  try:
+    file_words = __import__(filename).source().split()
+    program_words.extend(file_words)
+    lower_program_words.extend([x.lower() for x in file_words])
+  except:
+    print("\nError: can't import file '{}.py'".format(filename))
+    error = True
 
 words = {
   # Stack operations
@@ -377,9 +398,8 @@ words = {
   'until': until,
   'again': again,
   # I/O
-  'source': source,
   '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
-  '.s': lambda: print("-- Print " if debug else "", f"<{len(data_stack)}> {data_stack}", end="\n" if debug else " "),
+  '.s': lambda: print("-- Print " if debug else "", "<{}> {}".format(len(data_stack), data_stack), end="\n" if debug else " "),
   'emit': lambda x: print(chr(int(x)), end=""),
   # Program flow
   'debug': debug_,
@@ -388,6 +408,74 @@ words = {
   'cleanup': cleanup_,
   # Comments
   '(': comment,
+  ## Numworks modules
+  # Ion
+  'key': lambda: (" ".join(ion.get_keys()),),
+  '?key': lambda x: (-1 if ion.keydown(x) else 0,),
+  'battery': lambda: (ion.battery_level(),),
+  'vbattery': lambda: (ion.battery(),),
+  '?charging': (-1 if ion.battery_ischarging() else 0,),
+  '>brightness': lambda x: ion.set_brightness(x),
+  'brightness>': lambda: (ion.get_brightness(),),
+  # Kandinsky
+  'pixel>': lambda y, x: k.get_pixel(x, y),
+  '>pixel': lambda b, r, g, y, x: k.set_pixel(x, y, (r,g,b)),
+  'puts': lambda string, y, x: k.draw_string(memory[string], x, y),
+  'line': lambda b,r,g, y2,x2, y1,x1: k.draw_line(x1,y1,x2,y2,(r,g,b)),
+  'circle': lambda b,r,g, R, y, x: k.draw_circle(x, y, R, (r,g,b)),
+  'fcircle': lambda b,r,g, R, y, x: k.fill_circle(x, y, R, (r,g,b)),
+  'frect': lambda b,r,g, h, w, y, x: k.fill_rect(x, y, w, h, (r,g,b)),
+  'palette': lambda key: k.get_palette()[memory[key]],
+  # Files
+  'source': source,
+  'import': import_,  
+}
+
+words_argc = {
+  # Stack operations
+  'dup': 1,    'drop': 1,    'swap': 2,
+  'over': 2,   'rot': 3,     'nip': 2,
+  'tuck': 2,   '>r': 1,      'r>': 0,
+  'r@': 0,
+  # Arithmetic
+  '+': 2,      '-': 2,       '*': 2,
+  '/': 2,      'mod': 2,
+  # Logic
+  'and': 2,    'or': 2,      'xor': 2,
+  # Comparaison
+  '<': 2,      '>': 2,       '<=': 2,
+  '>=': 2,     '!=': 2,      '=': 2,
+  # Word definition
+  ':': 0,      ';': 0,
+  # Memory
+  'here': 0,   'allot': 1,   'cell': 0,
+  '!': 2,      '@': 1,       'variable': 0,
+  'constant': 1,
+  # Strings
+  '."': 0,     's"': 0,
+  # Branching
+  'i': 0,      'if': 1,      'else': 0,
+  'then': 0,   'do': 0,      'leave': 0,
+  'while': 1,  'repeat': 0,  'loop': 0,
+  '+loop': 1,  'until': 1,   'again': 0,
+  # I/O
+  '.': 1,       '.s': 0,     'emit': 1,
+  # Program flow
+  'debug': 1,  'exit': 1,    'bye': 0,
+  'cleanup': 1,
+  # Comments
+  '(': 0,
+  ## Numworks modules
+  # Ion
+  'key': 0,    '?key': 1,    'battery': 0,
+  'vbattery': 0,             '?charging': 0,
+  '>brightness': 1,          'brightness>': 0,
+  # Kandinsky
+  'pixel>': 2, '>pixel': 5,  'puts': 3,
+  'line': 7,   'circle': 6,  'fcircle': 6,
+  'frect': 7,  'palette': 1,
+  # Files
+  'source': 0, 'import': 0,
 }
 
 
@@ -450,19 +538,6 @@ def main():
   except:
     print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
 
-  if debug:
-    print("### Args ###")
-    print(f"{sys.argv[1:]}")
-  for arg in sys.argv[1:]:
-    if arg in {"--profile", "-p"}:
-      continue
-    try:
-      file_words = open(arg, "r").read().split()
-      program_words.extend(file_words)
-      lower_program_words.extend([x.lower() for x in file_words])
-    except:
-      print(f"ERROR: '{arg}' couldn't be loaded!")
-      exit(1)
   program_words_len = len(program_words)
   execute()
   if do_cleanup: cleanup()
@@ -473,7 +548,7 @@ def main():
     comment = False
     source = False
     input_ = input("> ")
-    print(f"\033[1A", input_, end=" ")
+    print("\033[1A", input_, end=" ")
     input_words = input_.split()
     new_words = input_words
     lower_new_words = [x.lower() for x in input_words]
@@ -485,7 +560,7 @@ def main():
       elif lower_word == "source":
         source = True
       if not lower_word in words and word.isdigit() and colon_def and comment and source:
-        print(f"\nERROR: Undefined word '{word}'")
+        print("\nERROR: Undefined word '{}'".format(word))
         continue_ = True
         break
       if word == ")":
@@ -526,7 +601,7 @@ def execute():
   global debug
   global program_words_len
 
-  if debug: print(f"len(program_words) = {len(program_words)}")
+  if debug: print("len(program_words) = {}".format(len(program_words)))
 
   while True:
     if word_pointer == program_words_len:
@@ -535,8 +610,8 @@ def execute():
     word = program_words[word_pointer]
     lower_word = lower_program_words[word_pointer]
     if debug:
-      print(f"\n--- Word {word} ---")
-      print(f"---- pointer = {word_pointer} ----")
+      print("\n--- Word {} ---".format(word))
+      print("---- pointer = {} ----".format(word_pointer))
     if not lower_word in words:
       if debug: print("Immediate")
       try:
@@ -545,22 +620,22 @@ def execute():
         continue
       # Undefined word
       except ValueError:
-        print(f"\nError: Word '{lower_word}' is undefined!")
+        print("\nError: Word '{}' is undefined!".format(lower_word))
         error = True
         word_pointer += 1
         continue
 
     func = words[lower_word]
-    #if callable(func):
-    argindex = len(data_stack) - func.__code__.co_argcount
+    argc = words_argc[lower_word]
+    argindex = len(data_stack) - argc
     if argindex < 0:
       print("\nStack underflow")
     args = data_stack[argindex:]
     if debug: 
-      print(f"--- Func {func} ---")
+      print("--- Func {} ---".format(func))
       print("Callable")
-      print(f"argindex = {argindex}, type({type(argindex)})")
-      print(f"args = {args}, type({type(args)})")
+      print("argindex = {}".format(argindex))
+      print("args = {}".format(args))
     del data_stack[argindex:]
     data_stack.extend(func(*args) or ())
 
@@ -568,16 +643,5 @@ def execute():
 
 
 if __name__ == '__main__':
-  profile = False
-  
-  if "--profile" in sys.argv or "-p" in sys.argv:
-    profile = True
-
-  if profile:
-    profiler = cProfile.Profile()
-    profiler.enable()
   main()
-  if profile:
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('tottime')
-    stats.print_stats()
+

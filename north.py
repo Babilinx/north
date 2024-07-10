@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import sys
+import os
+import ion
+import kandinsky as k
 
 memory_size = 4096
 
@@ -16,6 +18,7 @@ def colon():
   global lower_program_words
   global colon_words
   global words
+  global words_argc
   # Next word is the word name
   word_pointer += 1
   word_name = lower_program_words[word_pointer]
@@ -29,6 +32,7 @@ def colon():
   colon_words[word_name] = [word_pointer, 0]
   # Define the new word as a colon word
   words[word_name] = docol
+  words_argc[word_name] = 0
   lower_next_words = lower_program_words[word_pointer:]
   for word in lower_next_words:
     # Skip until end of colon definition
@@ -55,11 +59,13 @@ def variable():
   global lower_program_words
   global variables
   global words
+  global words_argc
   global here
   word_pointer += 1
   variable_name = lower_program_words[word_pointer]
   variable_ptr = here
   words[variable_name] = lambda: (variable_ptr,)
+  words_argc[variable_name] = 0
   here += 1
   return (variable_ptr,)
 
@@ -72,6 +78,7 @@ def constant(x):
   constant_name = program_words[word_pointer]
   constants[constant_name] = x
   words[constant_name] = get_constant
+  words_argc[constant_name] = 0
 
 def get_constant():
   global word_pointer
@@ -263,8 +270,8 @@ def source():
     file_words = open(filename, 'r').read().split()
     program_words.extend(file_words)
     lower_program_words.extend([x.lower() for x in file_words])
-  except FileNotFoundError:
-    print(f"\nError: can't open file '{filename}'")
+  except:
+    print("\nError: can't open file '{}'".format(filename))
     error = True
 
 def bye():
@@ -289,6 +296,21 @@ def comment():
     if comment_times == 0:
       break
     word_pointer += 1
+
+def import_():
+  global program_words
+  global lower_program_words
+  global word_pointer
+  global error
+  word_pointer += 1
+  filename = str(program_words[word_pointer])
+  try:
+    file_words = __import__(filename).source().split()
+    program_words.extend(file_words)
+    lower_program_words.extend([x.lower() for x in file_words])
+  except:
+    print("\nError: can't import file '{}.py'".format(filename))
+    error = True
 
 words = {
   # Stack operations
@@ -347,9 +369,8 @@ words = {
   'until': until,
   'again': again,
   # I/O
-  'source': source,
   '.': lambda x: print(x, end=" "),
-  '.s': lambda: print(f"<{len(data_stack)}> {data_stack}", end=" "),
+  '.s': lambda: print("<{}> {}".format(len(data_stack), data_stack), end=" "),
   'emit': lambda x: print(chr(int(x)), end=""),
   # Program flow
   'debug': lambda x: (),
@@ -358,6 +379,74 @@ words = {
   'cleanup': cleanup_,
   # Comments
   '(': comment,
+  ## Numworks modules
+  # Ion
+  'key': lambda: (" ".join(ion.get_keys()),),
+  '?key': lambda x: (-1 if ion.keydown(x) else 0,),
+  'battery': lambda: (ion.battery_level(),),
+  'vbattery': lambda: (ion.battery(),),
+  '?charging': (-1 if ion.battery_ischarging() else 0,),
+  '>brightness': lambda x: ion.set_brightness(x),
+  'brightness>': lambda: (ion.get_brightness(),),
+  # Kandinsky
+  'pixel>': lambda y, x: k.get_pixel(x, y),
+  '>pixel': lambda b, r, g, y, x: k.set_pixel(x, y, (r,g,b)),
+  'puts': lambda string, y, x: k.draw_string(memory[string], x, y),
+  'line': lambda b,r,g, y2,x2, y1,x1: k.draw_line(x1,y1,x2,y2,(r,g,b)),
+  'circle': lambda b,r,g, R, y, x: k.draw_circle(x, y, R, (r,g,b)),
+  'fcircle': lambda b,r,g, R, y, x: k.fill_circle(x, y, R, (r,g,b)),
+  'frect': lambda b,r,g, h, w, y, x: k.fill_rect(x, y, w, h, (r,g,b)),
+  'palette': lambda key: k.get_palette()[memory[key]],
+  # Files
+  'source': source,
+  'import': import_,
+}
+
+words_argc = {
+  # Stack operations
+  'dup': 1,    'drop': 1,    'swap': 2,
+  'over': 2,   'rot': 3,     'nip': 2,
+  'tuck': 2,   '>r': 1,      'r>': 0,
+  'r@': 0,
+  # Arithmetic
+  '+': 2,      '-': 2,       '*': 2,
+  '/': 2,      'mod': 2,
+  # Logic
+  'and': 2,    'or': 2,      'xor': 2,
+  # Comparaison
+  '<': 2,      '>': 2,       '<=': 2,
+  '>=': 2,     '!=': 2,      '=': 2,
+  # Word definition
+  ':': 0,      ';': 0,
+  # Memory
+  'here': 0,   'allot': 1,   'cell': 0,
+  '!': 2,      '@': 1,       'variable': 0,
+  'constant': 1,
+  # Strings
+  '."': 0,     's"': 0,
+  # Branching
+  'i': 0,      'if': 1,      'else': 0,
+  'then': 0,   'do': 0,      'leave': 0,
+  'while': 1,  'repeat': 0,  'loop': 0,
+  '+loop': 1,  'until': 1,   'again': 0,
+  # I/O
+   '.': 1,     '.s': 0,      'emit': 1,
+  # Program flow
+  'debug': 1,  'exit': 1,    'bye': 0,
+  'cleanup': 1,
+  # Comments
+  '(': 0,
+  ## Numworks modules
+  # Ion
+  'key': 0,    '?key': 1,    'battery': 0,
+  'vbattery': 0,             '?charging': 0,
+  '>brightness': 1,          'brightness>': 0,
+  # Kandinsky
+  'pixel>': 2, '>pixel': 5,  'puts': 3,
+  'line': 7,   'circle': 6,  'fcircle': 6,
+  'frect': 7,  'palette': 1,
+  # Files
+  'source': 0, 'import': 0
 }
 
 
@@ -411,21 +500,14 @@ def main():
   error = False
   do_cleanup = False
 
-  #try:
-  init_words = open("init.nth", "r").read().split()
-  program_words.extend(init_words)
-  lower_program_words.extend([x.lower() for x in init_words])
-  #except:
-    #print("INFO: 'init.nth' couldn't be loaded. Some words might be missing.")
+  try:
+    import north_init
+    init_words = north_init.source().split()
+    program_words.extend(init_words)
+    lower_program_words.extend([x.lower() for x in init_words])
+  except:
+    print("INFO: 'north_init.py' couldn't be loaded. Some words might be missing.")
 
-  for arg in sys.argv[1:]:
-    try:
-      file_words = open(arg, "r").read().split()
-      program_words.extend(file_words)
-      lower_program_words.extend([x.lower() for x in file_words])
-    except:
-      print(f"ERROR: '{arg}' couldn't be loaded!")
-      exit(1)
   program_words_len = len(program_words)
   execute()
   if do_cleanup: cleanup()
@@ -436,7 +518,7 @@ def main():
     comment = False
     source = False
     input_ = input("> ")
-    print(f"\033[1A", input_, end=" ")
+    print("\033[1A", input_, end=" ")
     input_words = input_.split()
     new_words = input_words
     lower_new_words = [x.lower() for x in input_words]
@@ -448,7 +530,7 @@ def main():
       elif lower_word == "source":
         source = True
       if not lower_word in words and word.isdigit() and colon_def and comment and source:
-        print(f"\nERROR: Undefined word '{lower_word}'")
+        print("\nERROR: Undefined word '{}'".format(lower_word))
         continue_ = True
         break
       if word == ")":
@@ -501,13 +583,14 @@ def execute():
         continue
       # Undefined word
       except ValueError:
-        print(f"\nError: Word '{lower_word}' is undefined!")
+        print("\nError: Word '{}' is undefined!".format(lower_word))
         error = True
         word_pointer += 1
         continue
 
     func = words[lower_word]
-    argindex = len(data_stack) - func.__code__.co_argcount
+    argc = words_argc[lower_word]
+    argindex = len(data_stack) - argc
     args = data_stack[argindex:]
     del data_stack[argindex:]
     data_stack.extend(func(*args) or ())
