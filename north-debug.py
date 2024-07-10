@@ -326,6 +326,21 @@ def comment():
       break
     word_pointer += 1
 
+def import_():
+  global program_words
+  global lower_program_words
+  global word_pointer
+  global error
+  word_pointer += 1
+  filename = str(program_words[word_pointer])
+  try:
+    file_words = __import__(filename).source().split()
+    program_words.extend(file_words)
+    lower_program_words.extend([x.lower() for x in file_words])
+  except:
+    print("\nError: can't import file '{}.py'".format(filename))
+    error = True
+
 words = {
   # Stack operations
   'dup': lambda x: (x, x),
@@ -383,7 +398,6 @@ words = {
   'until': until,
   'again': again,
   # I/O
-  'source': source,
   '.': lambda x: print("-- Print " if debug else "", x, end="\n" if debug else " "),
   '.s': lambda: print("-- Print " if debug else "", "<{}> {}".format(len(data_stack), data_stack), end="\n" if debug else " "),
   'emit': lambda x: print(chr(int(x)), end=""),
@@ -412,6 +426,9 @@ words = {
   'fcircle': lambda b,r,g, R, y, x: k.fill_circle(x, y, R, (r,g,b)),
   'frect': lambda b,r,g, h, w, y, x: k.fill_rect(x, y, w, h, (r,g,b)),
   'palette': lambda key: k.get_palette()[memory[key]],
+  # Files
+  'source': source,
+  'import': import_,  
 }
 
 words_argc = {
@@ -442,8 +459,7 @@ words_argc = {
   'while': 1,  'repeat': 0,  'loop': 0,
   '+loop': 1,  'until': 1,   'again': 0,
   # I/O
-  'source': 0, '.': 1,       '.s': 0,
-  'emit': 1,
+  '.': 1,       '.s': 0,     'emit': 1,
   # Program flow
   'debug': 1,  'exit': 1,    'bye': 0,
   'cleanup': 1,
@@ -458,6 +474,8 @@ words_argc = {
   'pixel>': 2, '>pixel': 5,  'puts': 3,
   'line': 7,   'circle': 6,  'fcircle': 6,
   'frect': 7,  'palette': 1,
+  # Files
+  'source': 0, 'import': 0,
 }
 
 
